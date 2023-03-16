@@ -1,0 +1,1 @@
+## Posterior samples from analyses can be created through analysis codes or are available on request.
