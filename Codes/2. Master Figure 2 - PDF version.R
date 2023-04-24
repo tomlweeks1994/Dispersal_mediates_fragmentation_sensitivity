@@ -53,6 +53,7 @@ natural_raster[which(getValues(natural_raster) > 0)] <- 1
 ## load environmental variables (will be used as a mask)
 envar <- raster::getData("worldclim", var = "bio", res=2.5)
 
+
 ## pull first raster
 worldmap_blank <- envar[[1]]
 
@@ -60,6 +61,9 @@ worldmap_blank <- envar[[1]]
 worldmap_blank[which(getValues(worldmap_blank) != "NA")] <- 10
 
 ## stack rasters
+#natural_raster <- aggregate(natural_raster, 4)
+#forest_loss <- aggregate(forest_loss, 4)
+
 raster_stack <- natural_raster
 raster_stack <- addLayer(raster_stack, forest_loss)
 raster_stack <- addLayer(raster_stack, worldmap_blank)
@@ -104,17 +108,19 @@ colScale <- scale_fill_manual(name = paste0("Historical",'\n',"disturbance"),
 a <- ggplot() +
   geom_tile(aes(x=x, y=y, fill= factor(Disturbance)), data=rasdf) +
   colScale +
-  geom_point(aes(x= Longitude, y=Latitude), colour = "black", size = 8, data = phylo_data) +
-  geom_point(aes(x= Longitude, y=Latitude), colour = "yellow", size = 6, data = phylo_data) +
+  geom_point(aes(x= Longitude, y=Latitude), colour = "black", size = 8/6, data = phylo_data) +
+  geom_point(aes(x= Longitude, y=Latitude), colour = "yellow", size = 6/7, data = phylo_data) +
   theme_void() +
   ggtitle("a") +
-  theme(legend.position= c(0.1,0.4),
-        plot.margin = unit(c(0,0,0,6.5), "cm"),
+  theme(legend.position= c(0.14,0.4),
+        plot.margin = unit(c(0,0,0,6.5/5), "cm"),
         legend.direction='vertical',
         legend.box = "vertical",
-        plot.title = element_text(size = 80, face = "bold"),
-        legend.title = element_text(size = 60, face = "bold"),
-        legend.text = element_text(size = 50)) +
+        legend.key.width = unit(0.0055/3, "npc"),
+        legend.key.height = unit(0.0275/2, "npc"),
+        plot.title = element_text(size = 80/5, face = "bold"),
+        legend.title = element_text(size = 60/5.25, face = "bold"),
+        legend.text = element_text(size = 50/5.5)) +
   ylab("Latitude") + 
   xlab("Longitude")
 
@@ -127,7 +133,7 @@ dat <- data.frame(x = 50:5, y = 5:50)
 
 ## plot simple plot of disturbance vs frag sensitiivity
 plot_disturbance <- ggplot(dat, aes(x, y)) + 
-  geom_line(col="skyblue", size = 3) + 
+  geom_line(col="skyblue", size = 3/5) + 
   xlab(paste("Fragmentation",'\n',"sensitivity")) + 
   ylab(paste("Historical disturbance")) +
   scale_y_continuous(expand = c(0,0)) +
@@ -135,20 +141,20 @@ plot_disturbance <- ggplot(dat, aes(x, y)) +
   ggtitle("c") +
   coord_flip() +
   theme_classic() + 
-  theme(axis.text=element_text(size=20),
-        axis.title = element_text(size=45),
+  theme(axis.text=element_text(size=20/5),
+        axis.title = element_text(size=45/5),
         axis.title.y = element_text(vjust = 3.5,  face = "bold"),
         axis.title.x = element_text(vjust = -1.5,  face = "bold"),
         axis.text.x=element_blank(),
         axis.ticks.x=element_blank(),
         axis.text.y=element_blank(),
         axis.ticks.y=element_blank(),
-        plot.title = element_text(size = 80, face = "bold", hjust = -0.3, vjust = 6),
-        plot.margin = unit(c(3,3,3,3), "cm")) +
-  geom_segment(aes(x=1, xend = 55 , y=1, yend = 1), size= 4,
-               arrow = arrow(length = unit(1,"cm"))) +
-  geom_segment(aes(x=1, xend = 1, y=1, yend = 55), size= 4,
-               arrow = arrow(length = unit(1,"cm")))
+        plot.title = element_text(size = 80/5, face = "bold", hjust = -0.3, vjust = 5),
+        plot.margin = unit(c(3/5,3/5,3/5,3/5), "cm")) +
+  geom_segment(aes(x=1, xend = 55 , y=1, yend = 1), size= 4/6,
+               arrow = arrow(length = unit(1/4.5,"cm"))) +
+  geom_segment(aes(x=1, xend = 1, y=1, yend = 55), size= 4/6,
+               arrow = arrow(length = unit(1/4.5,"cm")))
 
 ## have to remove boarders to allow plotting correctly
 c <- ggplot_gtable(ggplot_build(plot_disturbance))
@@ -160,7 +166,9 @@ c$layout$clip[c$layout$name=="panel"] <- "off"
 #Panel b) HWI distribution map
 #-----------------------------------------------------
 ## read in my HWI raster
-all_HWI <- raster("Rasters/All_species_HWI_SR5.tiff")
+all_HWI <- readRDS("Rasters//HWI_raster.rds")
+
+#all_HWI <- aggregate(all_HWI, 4)
 ## create df and drop NAs
 all_rasdf <- as.data.frame(all_HWI, xy = TRUE) %>% drop_na()
 
@@ -185,16 +193,18 @@ b <- ggplot() +
   xlab("Longitude") +
   theme_void() +
   ggtitle("b") +
-  theme(legend.position = c(0.045,0.40),
-        plot.margin = unit(c(0,0,0,6.5), "cm"),
+  theme(#legend.position = c(0.045,0.40),
+        legend.position = c(0.045,0.40),
+        plot.margin = unit(c(0/5,0/5,0/5,6.5/5), "cm"),
         legend.direction = "vertical",
         legend.box = "vertical",
-        legend.key.height = unit(0.035, "npc"),
-        legend.text = element_text(size = 50),
-        plot.title = element_text(size = 80, face = "bold"),
-        legend.title = element_text(size = 60, face = "bold")) +
-  geom_point(aes(x= Longitude, y=Latitude), colour = "black", size = 8, data = phylo_data) +
-  geom_point(aes(x= Longitude, y=Latitude), colour = "yellow", size = 6, data = phylo_data)
+        legend.key.height = unit(0.02/2, "npc"),
+        legend.key.width = unit(0.0055/3, "npc"),
+        legend.text = element_text(size = 50/5.5),
+        plot.title = element_text(size = 80/5, face = "bold"),
+        legend.title = element_text(size = 60/5.25, face = "bold")) +
+  geom_point(aes(x= Longitude, y=Latitude), colour = "black", size = 8/6, data = phylo_data) +
+  geom_point(aes(x= Longitude, y=Latitude), colour = "yellow", size = 6/7, data = phylo_data)
 
 
 #--------------------------------------------------
@@ -205,7 +215,7 @@ dat <- data.frame(x = 5:50, y = 5:50)
 
 ## ggplot (simple plot for dispersal vs frag sensitivity)
 plot_HWI <- ggplot(dat, aes(x, y)) + 
-  geom_line(col="skyblue", size = 3) + 
+  geom_line(col="skyblue", size = 3/5) + 
   xlab(paste("Fragmentation",'\n', "sensitivity")) + 
   ylab(paste("Dispersal limitation (nHWI)")) +
   scale_y_continuous(expand = c(0,0)) +
@@ -213,31 +223,29 @@ plot_HWI <- ggplot(dat, aes(x, y)) +
   theme_classic() + 
   coord_flip() +
   ggtitle("d") +
-  theme(axis.text=element_text(size=20),
-        axis.title = element_text(size=45),
+  theme(axis.text=element_text(size=20/5),
+        axis.title = element_text(size=45/5),
         axis.title.y = element_text(vjust = 3.5,  face = "bold"),
         axis.title.x = element_text(vjust = -1.5,  face = "bold"),
         axis.text.x=element_blank(),
         axis.ticks.x=element_blank(),
         axis.text.y=element_blank(),
         axis.ticks.y=element_blank(),
-        plot.title = element_text(size = 80, face = "bold", hjust = -0.3, vjust = 6),
-        plot.margin = unit(c(3,3,3,3), "cm")) +
-  geom_segment(aes(x=1, xend = 55 , y=1, yend = 1), size=4,
-               arrow = arrow(length = unit(1,"cm"))) +
-  geom_segment(aes(x=1, xend = 1, y=1, yend = 55), size=4,
-               arrow = arrow(length = unit(1,"cm")))
+        plot.title = element_text(size = 80/5, face = "bold", hjust = -0.3, vjust = 5),
+        plot.margin = unit(c(3/5,3/5,3/5,3/5), "cm")) +
+  geom_segment(aes(x=1, xend = 55 , y=1, yend = 1), size=4/6,
+               arrow = arrow(length = unit(1/4.5,"cm"))) +
+  geom_segment(aes(x=1, xend = 1, y=1, yend = 55), size=4/6,
+               arrow = arrow(length = unit(1/4.5,"cm")))
 
 ## have to remove boarders to allow plotting correctly
 d <- ggplot_gtable(ggplot_build(plot_HWI))
 d$layout$clip[d$layout$name=="panel"] <- "off"
 
-### SAVE TIFFS AND PNGS ###################
-## TIFF
-tiff("Figures/Figure_2.tif",
-     width = 2820, height = 1580)
+### SAVE PDF ###################
 
-cowplot::ggdraw( grid.arrange(
+
+please <- cowplot::ggdraw(grid.arrange(
   grobs = list(a, c, b, d),
   widths = c(5, 2),
   layout_matrix = rbind(c(1, 2),
@@ -245,33 +253,18 @@ cowplot::ggdraw( grid.arrange(
 )) +
   theme(plot.background = element_rect(fill="white", color = "white"))
 
-dev.off()
-
-## png
-png("Figures/Figure_2.png",
-     width = 2820, height = 1580)
-
-cowplot::ggdraw( grid.arrange(
-  grobs = list(a, c, b, d),
-  widths = c(5, 2),
-  layout_matrix = rbind(c(1, 2),
-                        c(3, 4))
-)) +
-  theme(plot.background = element_rect(fill="white", color = "white"))
-
-dev.off()
-
-
-
-pdf("Figures/Figure_2.pdf",
+pdf("../Figures/Figure_2_final_2404_outside6.pdf",
     width = 2820/360, height = 1580/360)
 
-cowplot::ggdraw( grid.arrange(
-  grobs = list(a, c, b, d),
-  widths = c(5, 2),
-  layout_matrix = rbind(c(1, 2),
-                        c(3, 4))
-)) +
-  theme(plot.background = element_rect(fill="white", color = "white"))
+please
 
 dev.off()
+
+# tiff("Figures/Figure_2_final_1.tiff",
+#     width = (2820/360)*72, height = (1580/360)*72)
+# 
+# plot
+# 
+# dev.off()
+
+

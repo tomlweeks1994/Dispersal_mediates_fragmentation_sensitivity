@@ -1,35 +1,26 @@
 library(brms)
 library(tidyverse)
 library(ape)
-library(geiger)
 library(phytools)
-library(future)
 library(caper)
-library(foreach)
-library(doParallel)
-library(glmmTMB)
-library(raster)
-library(lme4)
-library(lmerTest)
 library(gridExtra)
-library(png)
-library(RCurl)
-library(grid)
-library(tidyverse)
 library(readxl)
 library(plyr)
+library(patchwork)
+library(grid)
+library(png)
 library(wesanderson)
 library(hier.part)
 
 #Read in the data
-site_data <- read_excel("Data/Supplementatry Dataset 1.xlsx", sheet = 2) %>%
+site_data <- read_excel("Data/Supplementary_Dataset_1.xlsx", sheet = 2) %>%
   dplyr::select("Dataset_ID", "Latitude", "Disturbance", "Anthro_dist", "Natural_dist",
                 "Seasonality")
 
-species_data <- read_excel("Data/Supplementatry Dataset 1.xlsx", sheet = 3) %>%
+species_data <- read_excel("Data/Supplementary_Dataset_1.xlsx", sheet = 3) %>%
   dplyr::select("Species_name", "Family", "Order", "nHWI", "Mass (g)", "Forest_dependency", "Migration")
 
-site_sp_list <- read_excel("Data/Supplementatry Dataset 1.xlsx", sheet = 4)
+site_sp_list <- read_excel("Data/Supplementary_Dataset_1.xlsx", sheet = 4)
 
 ##Join them up
 data <- left_join(site_sp_list, site_data)
@@ -168,12 +159,13 @@ df_all$Coefficient <- factor(df_all$Coefficient, levels = c("Seasonality", "Lati
 
 
 ## plot forest plot ##
-pd <- position_dodge(0.75)
+pd <- position_dodge(0.85)
 main_full <- ggplot(data=df_all, aes(x=Coefficient, y=Estimate))+ 
-  geom_hline(yintercept = 0, lty = 2) +
+  theme_classic() +
+  geom_hline(yintercept = 0, lty = 2, size = 0.568) +
   geom_linerange(aes(ymin=Estimate-CI_interval, ymax=Estimate+CI_interval, 
-                     colour = Coefficient, alpha = Sample),lwd = 3, position = pd, show.legend=F) + 
-  geom_point(aes(group = Sample, color = Coefficient), fill = "White",  size = 5,  shape = 21,  
+                     colour = Coefficient, alpha = Sample),lwd = 2, position = pd, show.legend=F) + 
+  geom_point(aes(group = Sample, color = Coefficient), fill = "White",  size = 3,  shape = 21,  
              position = pd, key_glyph = draw_key_pointrange, show.legend=F) +
   scale_alpha_discrete(range = c(0.2, 1)) +
   scale_color_manual(values = c("red", "deepskyblue", "gold"), 
@@ -184,21 +176,21 @@ main_full <- ggplot(data=df_all, aes(x=Coefficient, y=Estimate))+
   xlab("") +
   ylim(-0.3, 0.2) +
   ggtitle("c") +
-  geom_vline(xintercept=3.75, lty = 2, size = 1, col = "black", alpha = 0.6, show.legend=F)+
+  geom_vline(xintercept=3.75, lty = 2, size = 1*0.568, col = "black", alpha = 0.6, show.legend=F)+
   coord_flip(clip = "off") +
-  theme(axis.title = element_text(size = 19),
-        axis.text.x = element_text(size = 16),
-        axis.text.y = element_text(size = 17, hjust = 0.4),
+  theme(axis.title = element_text(size = 19*0.568),
+        axis.text.x = element_text(size = 16*0.568),
+        axis.text.y = element_text(size = 17*0.568, hjust = 0.4),
         axis.title.x = element_blank(),
         legend.position = "none",# c(0.77,0.75),
         legend.background = element_blank(),
         legend.title = element_blank(),
-        legend.text = element_text(size = 15),
-        plot.title = element_text(size = 20, face = "bold", vjust = -6, hjust = 0.05),
+        legend.text = element_text(size = 15*0.568),
+        plot.title = element_text(size = 20*0.568, face = "bold", vjust = -6, hjust = 0.05),
         plot.margin = margin(0,0,0,0, unit = "pt"),
-        legend.key.size = unit(1, "cm")) +
-  annotate("text",fontface = "bold", x=0.9, y=0.155, label= paste0("AIC: ", round(AIC_all_full, 0)), size = 5) +
-  annotate("text", fontface = "bold",x=0.6, y=0.155, label= paste0("R²:  ", round(R2_all_full, 3)), size = 5)
+        legend.key.size = unit(1*0.568, "cm")) +
+  annotate("text",fontface = "bold", x=0.9, y=0.155, label= paste0("AIC: ", round(AIC_all_full, 0)), size = 5*0.568) +
+  annotate("text", fontface = "bold",x=0.6, y=0.155, label= paste0("R²:  ", round(R2_all_full, 3)), size = 5*0.568)
 
 
 
@@ -228,6 +220,7 @@ comp_data_2 <- comparative.data( consensus_tree, rand_data_2, "Jetz_name")
 
 mod_no_mig_DL <- pgls(nHWI_z ~ Disturbance_mean + Abs_latitude_mean,
                       lambda = "ML",
+                      bounds=list(lambda=c(0.01,0.99)),
                    data = comp_data_2)
 
 summary_no_mig_DL <- summary(mod_no_mig_DL)
@@ -288,13 +281,13 @@ df_all$Coefficient <- factor(df_all$Coefficient, levels = c("Seasonality", "Lati
 
 
 ## ggplot
-pd <- position_dodge(0.75)
+pd <- position_dodge(0.85)
 main_dist_lat <- ggplot(data=df_all, aes(x=Coefficient, y=Estimate))+ 
   theme_classic() + #clean graph
-  geom_hline(yintercept = 0, lty = 2) +
+  geom_hline(yintercept = 0, lty = 2, size = 0.568) +
   geom_linerange(aes(ymin=Estimate-CI_interval, ymax=Estimate+CI_interval, 
-                     colour = Coefficient, alpha = Sample),lwd = 3, position = pd, show.legend=F) + 
-  geom_point(aes(group = Sample, color = Coefficient), fill = "White",  size = 5,  shape = 21,  
+                     colour = Coefficient, alpha = Sample),lwd = 2, position = pd, show.legend=F) + 
+  geom_point(aes(group = Sample, color = Coefficient), fill = "White",  size = 3,  shape = 21,  
              position = pd, key_glyph = draw_key_pointrange, show.legend=F) +
   scale_alpha_discrete(range = c(0.2, 1)) +
   scale_color_manual(values = c("red", "gold", "deepskyblue"), 
@@ -305,12 +298,12 @@ main_dist_lat <- ggplot(data=df_all, aes(x=Coefficient, y=Estimate))+
   xlab("") +
   ylim(-0.3, 0.2) +
   ggtitle("b") +
-  geom_vline(xintercept=2.75, lty = 2, size = 1, col = "black", alpha = 0.6) +
+  geom_vline(xintercept=2.75, lty = 2, size = 1*0.568, col = "black", alpha = 0.6) +
   coord_flip(clip = "off") +
-  theme(axis.title = element_text(size = 22),
+  theme(axis.title = element_text(size = 22*0.568),
         #axis.text.x = element_text(size = 15),
         axis.text.x = element_blank(),
-        axis.text.y = element_text(size = 17, hjust = 0.4),
+        axis.text.y = element_text(size = 17*0.568, hjust = 0.4),
         #axis.title.x = element_text(vjust = -1),
         #axis.text.x = element_blank(),
         axis.ticks.x = element_blank(),
@@ -322,13 +315,13 @@ main_dist_lat <- ggplot(data=df_all, aes(x=Coefficient, y=Estimate))+
         legend.background = element_blank(),
         legend.box.background = element_rect(colour = "black"),
         legend.title = element_blank(),
-        legend.text = element_text(size = 22),
+        legend.text = element_text(size = 22*0.568),
         legend.key = element_rect(color = NA, fill = NA),
-        legend.key.size = unit(1.5, "cm"),
-        plot.title = element_text(size = 20, face = "bold", vjust = -6, hjust = 0.05),
+        legend.key.size = unit(1.5*0.568, "cm"),
+        plot.title = element_text(size = 20*0.568, face = "bold", vjust = -6, hjust = 0.05),
         plot.margin = margin(0,0,0,0, unit = "pt")) +
-  annotate("text", fontface = "bold", x=0.9, y=0.155, label= paste0("AIC: ", round(AIC_all_LD, 0)), size = 5) +
-  annotate("text", fontface = "bold", x=0.6, y=0.155, label= paste0("R²:  ", format(round(R2_all_LD, 3), nsmall = 3)), size = 5)
+  annotate("text", fontface = "bold", x=0.9, y=0.155, label= paste0("AIC: ", round(AIC_all_LD, 0)), size = 5*0.568) +
+  annotate("text", fontface = "bold", x=0.6, y=0.155, label= paste0("R²:  ", format(round(R2_all_LD, 3), nsmall = 3)), size = 5*0.568)
 
 
 
@@ -416,13 +409,13 @@ df_all$Coefficient <- factor(df_all$Coefficient, levels = c("Seasonality", "Lati
 
 
 ############ ggplot #################
-pd <- position_dodge(0.75)
+pd <- position_dodge(0.85)
 main_dist <- ggplot(data=df_all, aes(x=Coefficient, y=Estimate))+ 
   theme_classic() + 
-  geom_hline(yintercept = 0, lty = 2) +
+  geom_hline(yintercept = 0, lty = 2, size = 0.568) +
   geom_linerange(aes(ymin=Estimate-CI_interval, ymax=Estimate+CI_interval, 
-                     colour = Coefficient, alpha = Sample),lwd = 3, position = pd, show.legend=F) + 
-  geom_point(aes(group = Sample, color = Coefficient), fill = "White",  size = 5,  shape = 21,  
+                     colour = Coefficient, alpha = Sample),lwd = 2, position = pd, show.legend=F) + 
+  geom_point(aes(group = Sample, color = Coefficient), fill = "White",  size = 3.5,  shape = 21,  
              position = pd, key_glyph = draw_key_pointrange, show.legend=F) +
   scale_color_manual(values = c("red", "gold", "deepskyblue"), 
                      breaks = c("Disturbance", "Latitude",
@@ -434,10 +427,10 @@ main_dist <- ggplot(data=df_all, aes(x=Coefficient, y=Estimate))+
   ylim(-0.3, 0.2) +
   ggtitle("a") +
   coord_flip(clip = "off") +
-  theme(axis.title = element_text(size = 22),
+  theme(axis.title = element_text(size = 22*0.568),
         #axis.text.x = element_text(size = 15),
         axis.text.x = element_blank(),
-        axis.text.y = element_text(size = 17, hjust = 0.4),
+        axis.text.y = element_text(size = 17*0.568, hjust = 0.4),
         #axis.title.x = element_text(vjust = -1),
         #axis.text.x = element_blank(),
         axis.ticks.x = element_blank(),
@@ -449,14 +442,14 @@ main_dist <- ggplot(data=df_all, aes(x=Coefficient, y=Estimate))+
         legend.background = element_blank(),
         legend.box.background = element_rect(colour = "black"),
         legend.title = element_blank(),
-        legend.text = element_text(size = 12),
+        legend.text = element_text(size = 12*0.568),
         legend.key = element_rect(color = NA, fill = NA),
-        plot.title = element_text(size = 20, face = "bold", vjust = -5, hjust = 0.05),
+        plot.title = element_text(size = 20*0.568, face = "bold", vjust = -5, hjust = 0.05),
         plot.margin = margin(0,0,0,0, unit = "pt")) +
-  annotate("text", fontface = "bold", x=0.9, y=0.155, label= paste0("AIC: ", round(AIC_all_dist, 0)), size = 5) +
+  annotate("text", fontface = "bold", x=0.9, y=0.155, label= paste0("AIC: ", round(AIC_all_dist, 0)), size = 5*0.568) +
   annotate("text", fontface = "bold", x=0.6, y=0.155, label= ifelse(R2_all_dist < 0.001,
                                                    paste0("R² < 0.001"),
-                                                   paste0("R²:  ", round(R2_all_dist, 3))), size = 5)
+                                                   paste0("R²:  ", round(R2_all_dist, 3))), size = 5*0.568)
 
 
 
@@ -467,15 +460,15 @@ arrow <- ggplot(data=df_all, aes(x=Coefficient, y=Estimate))+
   ylim(-0.3, 0.15) +
   coord_flip(clip = "off") +
   geom_segment(
-    x = 1.04, y = -0.25,
+    x = 1.04, y = -0.24,
     xend = 1.04, yend = 0.16,
     lineend = "round", 
     linejoin = "round",
-    size = 3.5, 
-    arrow = arrow(length = unit(0.4, "inches")),
+    size = 3.5*0.568, 
+    arrow = arrow(length = unit(0.4*0.568, "inches")),
     colour = "grey80" ) +
   annotate(geom="text", x=1.625, y=-0.04, label="Dispersal limitation (nHWI)",
-           color="black", size = 7) +
+           color="black", size = 7*0.568) +
   theme(axis.title = element_blank(),
         axis.text = element_blank())
 
@@ -562,6 +555,7 @@ mod_seas_only_2 <- pgls(nHWI_z ~ Seasonality_mean,
 
 mod_seas_dist_2 <- pgls(nHWI_z ~ Disturbance_mean + Seasonality_mean,
                         lambda = "ML",
+                        bounds=list(lambda=c(0.01,0.99)),
                         data = comp_data_2)
 
 mod_seas_lat_2 <- pgls(nHWI_z ~  Seasonality_mean + Abs_latitude_mean,
@@ -703,10 +697,10 @@ hp_plot_main <- ggplot(data = hp2 %>% dplyr::filter(
   theme_classic() +
   coord_cartesian(clip = "off") +
   theme(legend.position = "none",
-        plot.title = element_text(size = 20, face = "bold", vjust = -1.5, hjust = 0.1),
-        axis.text.x = element_text(size = 17, angle = 60, hjust = 1.1),
-        axis.text.y = element_text(size = 12),
-        axis.title.y = element_text(size  = 17),
+        plot.title = element_text(size = 20*0.568, face = "bold", vjust = -1.5, hjust = 0.1),
+        axis.text.x = element_text(size = 17*0.568, angle = 60, hjust = 1.1),
+        axis.text.y = element_text(size = 12*0.568),
+        axis.title.y = element_text(size  = 17*0.568),
         axis.title.x = element_blank(),
         plot.margin = margin(0.0,0,0.0,0, "npc"))
 
@@ -729,8 +723,8 @@ hp_plot_DL<- ggplot(data = hp2 %>% dplyr::filter(
   coord_cartesian(clip = "off") +
   theme(legend.position = "none",
         axis.text.x = element_blank(),
-        axis.text.y = element_text(size = 12),
-        plot.title = element_text(size = 20, face = "bold", vjust = -1.5, hjust = 0.1),
+        axis.text.y = element_text(size = 12*0.568),
+        plot.title = element_text(size = 20*0.568, face = "bold", vjust = -1.5, hjust = 0.1),
         #axis.title.y = element_text(size  = 16, vjust = 3),
         axis.title = element_blank(),
         plot.margin = margin(0.0,0,0.0,0, "npc"))
@@ -751,15 +745,19 @@ hp_plot_dist <- ggplot(data = hp2 %>% dplyr::filter(
   theme_classic() +
   coord_cartesian(clip = "off") +
   theme(legend.position = "none",
-        plot.title = element_text(size = 20, face = "bold", vjust = -1.5, hjust = 0.1),
+        plot.title = element_text(size = 20*0.568, face = "bold", vjust = -1.5, hjust = 0.1),
         axis.text.x = element_blank(),
-        axis.text.y = element_text(size = 12),
-        axis.title.y = element_text(size  = 17),
+        axis.text.y = element_text(size = 12*0.568),
+        axis.title.y = element_text(size  = 17*0.568),
         axis.title.x = element_blank(),
         plot.margin = margin(0.0,0,0.0,0, "npc"))
 
 ################ create pngs and tiffs files using patchwork library ###########
 ### Figures are adapted outside of R - Figure legends ###
+legend <- readPNG("../figure_5 legend_tp.png")
+legend_raster <- as.raster(legend,interpolate=F)
+legend_grob <- rasterGrob(legend_raster)
+
 png("Figures/Figure 5.png",
     width = 900, height = 650)
 
@@ -785,6 +783,23 @@ tiff("Figures/Figure 5.tif",
 
 grid::grid.draw(grid::textGrob(hp_plot_DL$labels$y, gp = gpar(col = "black", fontsize = 20), y = 0.55, x = 0.8, rot = 90))
 grid::grid.draw(grid::textGrob(main_full$labels$y, gp = gpar(col = "black", fontsize = 20), y = 0.095, x = 0.45))
+
+dev.off()
+
+
+pic <- 
+  ((arrow / main_dist / main_dist_lat / main_full) + plot_layout(heights = c(0.5, 1,2,3)) | plot_spacer() |
+     (plot_spacer() /  hp_plot_dist / hp_plot_DL/ hp_plot_main) + plot_layout(heights = c(0.25,1,1,1))) + plot_layout(widths = c(4,0.5, 1))
+  
+
+pdf("Figures/Figure 5_final_new_leg.pdf",
+  width = 900/112, height = 650/112)
+
+pic/plot_spacer() + plot_layout(heights = c(10, 1))
+grid::grid.draw(grid::textGrob(hp_plot_DL$labels$y, gp = gpar(col = "black", fontsize = 20*0.568), y = 0.55, x = 0.79, rot = 90))
+grid::grid.draw(grid::textGrob(main_full$labels$y, gp = gpar(col = "black", fontsize = 20*0.568), y = 0.2, x = 0.45))
+grid::grid.draw(grid::rasterGrob(legend_raster,  y = 0.1225, x = 0.45, height = 0.125, width = 0.35))
+
 
 dev.off()
 
